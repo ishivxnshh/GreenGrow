@@ -18,6 +18,7 @@ from dotenv import load_dotenv
 import pandas as pd
 import difflib
 import re
+from werkzeug.utils import secure_filename
 
 # ===============================
 # CONFIGURATION & INITIALIZATION
@@ -393,6 +394,93 @@ def payment_status():
         print(f"❌ Payment status check error: {e}")
         traceback.print_exc()
         return jsonify({"error": "Failed to check payment status"}), 500
+
+# ===============================
+# PROFILE UPLOAD & GET
+# ===============================
+
+UPLOAD_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), "uploads", "avatars"))
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+@app.route("/api/profile/avatar", methods=["POST"])
+@jwt_required()
+def update_avatar():
+    if 'avatar' not in request.files:
+        return jsonify({'error': 'No avatar uploaded'}), 400
+    file = request.files['avatar']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    filename = secure_filename(file.filename)
+    ext = filename.split('.')[-1].lower()
+    if ext not in ["jpg", "jpeg", "png", "gif", "bmp"]:
+        return jsonify({'error': 'Unsupported image type'}), 400
+    user_id = get_jwt_identity()
+    # Save as userID.extension (overwrite if exists)
+    unique_filename = f"{user_id}.{ext}"
+    file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
+    file.save(file_path)
+    rel_url = f"/uploads/avatars/{unique_filename}"
+    # Update MongoDB user
+    if users_collection is not None:
+        users_collection.update_one({'_id': ObjectId(user_id)}, {'$set': {'avatar_url': rel_url}})
+    return jsonify({'avatar_url': rel_url}), 200
+
+@app.route("/api/profile/avatar", methods=["DELETE"])
+@jwt_required()
+def remove_avatar():
+    try:
+        user_id = get_jwt_identity()
+        if users_collection is None:
+            return jsonify({"error": "Database connection not available"}), 500
+        user = users_collection.find_one({"_id": ObjectId(user_id)})
+        if not user or not user.get("avatar_url"):
+            return jsonify({"message": "No avatar to remove"}), 200
+        # Remove file from disk
+        rel_url = user["avatar_url"]
+        filename = rel_url.split("/")[-1]
+        avatar_path = os.path.join(UPLOAD_FOLDER, filename)
+        if os.path.exists(avatar_path):
+            os.remove(avatar_path)
+        # Remove avatar_url from DB
+        users_collection.update_one({"_id": ObjectId(user_id)}, {"$unset": {"avatar_url": ""}})
+        return jsonify({"message": "Avatar removed"}), 200
+    except Exception as e:
+        print(f"❌ Avatar removal error: {e}")
+        traceback.print_exc()
+        return jsonify({"error": "Failed to remove avatar"}), 500
+
+@app.route("/api/profile", methods=["GET"])
+@jwt_required()
+def user_profile():
+    try:
+        if users_collection is None:
+            return jsonify({"error": "Database connection not available"}), 500
+        user_id = get_jwt_identity()
+        user = users_collection.find_one({"_id": ObjectId(user_id)})
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        # Include avatar_url if any
+        prof = {
+            "id": str(user['_id']),
+            "username": user.get('username', ''),
+            "email": user.get('email', ''),
+            "created_at": user.get('created_at').isoformat() if user.get('created_at') else '',
+            "is_active": user.get('is_active', True),
+            "avatar_url": user.get('avatar_url', None)
+        }
+        return jsonify({"user": prof}), 200
+    except Exception as e:
+        print(f"❌ Profile error: {e}")
+        traceback.print_exc()
+        return jsonify({"error": "Failed to get profile"}), 500
+
+# Avatar static files (CORS enabled)
+from flask import send_from_directory, make_response
+@app.route("/uploads/avatars/<filename>")
+def uploaded_avatar(filename):
+    resp = make_response(send_from_directory(UPLOAD_FOLDER, filename))
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp
 
 # ===============================
 # MAIN ENTRY
