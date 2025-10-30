@@ -15,6 +15,9 @@ from flask_jwt_extended import (
 from pymongo import MongoClient
 from bson import ObjectId
 from dotenv import load_dotenv
+import pandas as pd
+import difflib
+import re
 
 # ===============================
 # CONFIGURATION & INITIALIZATION
@@ -86,6 +89,62 @@ tips = {
     "rice": "🌾 Needs heavy rainfall & humid conditions.",
     # (you can keep your full `tips` map here; omitted for brevity)
 }
+
+# ===============================
+# SOIL RESTORATION MODEL (CSV-BASED)
+# ===============================
+
+SOIL_CSV_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), 'india_crop_rotation_200_plus.csv'))
+soil_df = None
+if os.path.exists(SOIL_CSV_PATH):
+    try:
+        soil_df = pd.read_csv(SOIL_CSV_PATH)
+        # Normalize whitespace, lowercase columns for consistent querying
+        soil_df.columns = [c.strip().lower().replace(' ', '_').replace(')', '') for c in soil_df.columns]
+    except Exception as e:
+        print(f"❌ Error loading soil restoration CSV: {e}")
+else:
+    print(f"❌ Soil CSV not found at {SOIL_CSV_PATH}")
+
+
+def normalize_crop_string(s):
+    # Remove non-alphanumeric except spaces, lowercase, and collapse whitespace
+    return re.sub(r'[^a-zA-Z0-9 ]', '', s or '').strip().lower()
+
+def get_crop_soil_recommendations(last_crop):
+    if soil_df is None:
+        return []
+    norm_input = normalize_crop_string(last_crop)
+    crop_names = soil_df['harvested'].astype(str).tolist()
+    norm_crop_names = [normalize_crop_string(c) for c in crop_names]
+
+    # Exact or substring match
+    matches_idx = [i for i, name in enumerate(norm_crop_names) if norm_input in name or name in norm_input]
+
+    # If nothing, fuzzy match for top 3 closest
+    if not matches_idx:
+        close_matches = difflib.get_close_matches(norm_input, norm_crop_names, n=3, cutoff=0.6)
+        matches_idx = [i for i, name in enumerate(norm_crop_names) if name in close_matches]
+
+    # Return matches as records
+    return soil_df.iloc[matches_idx].to_dict(orient='records') if matches_idx else []
+
+
+@app.route("/api/soil-restoration", methods=["POST"])
+def soil_restoration_endpoint():
+    try:
+        data = request.get_json() or {}
+        last_crop = data.get("last_crop", "").strip()
+        if not last_crop:
+            return jsonify({"error": "Missing last_crop in request."}), 400
+        results = get_crop_soil_recommendations(last_crop)
+        if not results:
+            return jsonify({"recommendations": [], "message": "No suitable rotation found for the given crop."})
+        return jsonify({"recommendations": results})
+    except Exception as e:
+        print("❌ Exception in /api/soil-restoration:", e)
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 # ===============================
 # ROUTES: Auth, Predict (unchanged)
