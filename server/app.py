@@ -415,15 +415,32 @@ def update_avatar():
     if ext not in ["jpg", "jpeg", "png", "gif", "bmp"]:
         return jsonify({'error': 'Unsupported image type'}), 400
     user_id = get_jwt_identity()
+
+    # Remove old file if extension changes or file exists
+    if users_collection is not None:
+        current = users_collection.find_one({'_id': ObjectId(user_id)})
+        if current and current.get('avatar_url'):
+            existing_filename = current['avatar_url'].split('/')[-1]
+            existing_path = os.path.join(UPLOAD_FOLDER, existing_filename)
+            if os.path.exists(existing_path) and existing_filename.split('.')[-1].lower() != ext:
+                try:
+                    os.remove(existing_path)
+                except Exception:
+                    pass
+
     # Save as userID.extension (overwrite if exists)
     unique_filename = f"{user_id}.{ext}"
     file_path = os.path.join(UPLOAD_FOLDER, unique_filename)
     file.save(file_path)
     rel_url = f"/uploads/avatars/{unique_filename}"
+
     # Update MongoDB user
     if users_collection is not None:
         users_collection.update_one({'_id': ObjectId(user_id)}, {'$set': {'avatar_url': rel_url}})
-    return jsonify({'avatar_url': rel_url}), 200
+
+    # Append version for cache busting in response only
+    versioned = f"{rel_url}?v={int(datetime.utcnow().timestamp())}"
+    return jsonify({'avatar_url': rel_url, 'avatar_public_url': versioned}), 200
 
 @app.route("/api/profile/avatar", methods=["DELETE"])
 @jwt_required()
