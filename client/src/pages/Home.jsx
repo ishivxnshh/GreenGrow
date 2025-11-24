@@ -1,9 +1,26 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
 
 export default function Home() {
   const { isAuthenticated, user } = useAuth();
+  const [typedTitle, setTypedTitle] = useState("");
+
+  useEffect(() => {
+    const text = "Welcome to GreenGrow";
+    let index = 0;
+
+    const timer = setInterval(() => {
+      index += 1;
+      setTypedTitle(text.slice(0, index));
+      if (index >= text.length) {
+        clearInterval(timer);
+      }
+    }, 90);
+
+    return () => clearInterval(timer);
+  }, []);
   return (
     <div>
       {/* Hero Section */}
@@ -27,11 +44,29 @@ export default function Home() {
         <div className="container mx-auto px-6 relative z-10">
           <motion.h1
             className="text-4xl md:text-5xl font-bold mb-4"
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
+            initial={{ opacity: 0, y: -40, scale: 0.95 }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              scale: [1, 1.03, 1],
+              textShadow: [
+                "0 0 0px rgba(74, 222, 128, 0.0)",
+                "0 0 20px rgba(74, 222, 128, 0.8)",
+                "0 0 0px rgba(74, 222, 128, 0.0)",
+              ],
+            }}
+            transition={{
+              duration: 1.2,
+              ease: "easeOut",
+              textShadow: { duration: 2.8, repeat: Infinity, repeatType: "loop" },
+              scale: { duration: 2.8, repeat: Infinity, repeatType: "mirror" },
+            }}
           >
-            🌱 Welcome to GreenGrow
+            <span className="mr-2">🌱</span>
+            <span className="inline-block min-w-[12ch]">
+              {typedTitle || "Welcome to GreenGrow"}
+              <span className="inline-block w-1 ml-0.5 bg-green-300 animate-pulse align-middle" />
+            </span>
           </motion.h1>
 
           <motion.p
@@ -52,7 +87,11 @@ export default function Home() {
               className="space-y-4"
             >
               <p className="text-green-300 text-lg">
-                Welcome back, {user?.username}! Ready to grow smarter?
+                Welcome back,{" "}
+                <span className="font-semibold text-lime-400">
+                  {user?.username}
+                </span>
+                ! Ready to grow smarter?
               </p>
               <Link
                 to="/crop-recommendations"

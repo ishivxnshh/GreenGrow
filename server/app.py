@@ -398,30 +398,100 @@ def remove_avatar():
         traceback.print_exc()
         return jsonify({"error": "Failed to remove avatar"}), 500
 
-@app.route("/api/profile", methods=["GET"])
+@app.route("/api/profile", methods=["GET", "PUT"])
 @jwt_required()
 def user_profile():
     try:
         if users_collection is None:
             return jsonify({"error": "Database connection not available"}), 500
+
         user_id = get_jwt_identity()
         user = users_collection.find_one({"_id": ObjectId(user_id)})
         if not user:
             return jsonify({"error": "User not found"}), 404
-        # Include avatar_url if any
+
+        if request.method == "GET":
+            # Include avatar_url and extended profile fields if any
+            prof = {
+                "id": str(user["_id"]),
+                "username": user.get("username", ""),
+                "email": user.get("email", ""),
+                "created_at": user.get("created_at").isoformat()
+                if user.get("created_at")
+                else "",
+                "is_active": user.get("is_active", True),
+                "avatar_url": user.get("avatar_url", None),
+                "phone": user.get("phone", ""),
+                "location": user.get("location", ""),
+                "about": user.get("about", ""),
+            }
+            return jsonify({"user": prof}), 200
+
+        # PUT: update profile fields
+        data = request.get_json() or {}
+
+        new_username = (data.get("username") or "").strip()
+        new_email = (data.get("email") or "").strip().lower()
+
+        update_doc = {}
+
+        # Username / email validation & uniqueness
+        if new_username:
+            if len(new_username) < 3:
+                return jsonify({"error": "Username must be at least 3 characters long"}), 400
+            if new_username != user.get("username") and users_collection.find_one(
+                {"username": new_username}
+            ):
+                return jsonify({"error": "Username already exists"}), 400
+            update_doc["username"] = new_username
+
+        if new_email:
+            if "@" not in new_email:
+                return jsonify({"error": "Invalid email format"}), 400
+            if new_email != user.get("email") and users_collection.find_one(
+                {"email": new_email}
+            ):
+                return jsonify({"error": "Email already registered"}), 400
+            update_doc["email"] = new_email
+
+        # Optional extended fields
+        if "phone" in data:
+            phone = (data.get("phone") or "").strip()
+            update_doc["phone"] = phone
+
+        if "location" in data:
+            location = (data.get("location") or "").strip()
+            update_doc["location"] = location
+
+        if "about" in data:
+            about = (data.get("about") or "").strip()
+            update_doc["about"] = about
+
+        if not update_doc:
+            return jsonify({"message": "No changes to update"}), 200
+
+        users_collection.update_one({"_id": ObjectId(user_id)}, {"$set": update_doc})
+
+        # Return updated profile snapshot
+        updated = users_collection.find_one({"_id": ObjectId(user_id)})
         prof = {
-            "id": str(user['_id']),
-            "username": user.get('username', ''),
-            "email": user.get('email', ''),
-            "created_at": user.get('created_at').isoformat() if user.get('created_at') else '',
-            "is_active": user.get('is_active', True),
-            "avatar_url": user.get('avatar_url', None)
+            "id": str(updated["_id"]),
+            "username": updated.get("username", ""),
+            "email": updated.get("email", ""),
+            "created_at": updated.get("created_at").isoformat()
+            if updated.get("created_at")
+            else "",
+            "is_active": updated.get("is_active", True),
+            "avatar_url": updated.get("avatar_url", None),
+            "phone": updated.get("phone", ""),
+            "location": updated.get("location", ""),
+            "about": updated.get("about", ""),
         }
-        return jsonify({"user": prof}), 200
+        return jsonify({"message": "Profile updated", "user": prof}), 200
     except Exception as e:
         print(f"❌ Profile error: {e}")
         traceback.print_exc()
-        return jsonify({"error": "Failed to get profile"}), 500
+        return jsonify({"error": "Failed to get/update profile"}), 500
 
 # Avatar static files (CORS enabled)
 from flask import send_from_directory, make_response

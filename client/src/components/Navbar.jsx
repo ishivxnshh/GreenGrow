@@ -7,6 +7,13 @@ import { FaUserCircle } from "react-icons/fa";
 export default function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const navItems = [
+    { label: "Home", path: "/" },
+    { label: "Crop Recommendations", path: "/crop-recommendations" },
+    { label: "Soil Restoration", path: "/soil-restoration" },
+    { label: "Disease Detection", path: "/disease-detection" },
+  ];
   // Animation variants for nav links
   const linkVariants = {
     hidden: { opacity: 0, y: -20 },
@@ -52,7 +59,7 @@ export default function Navbar() {
 
         {/* Desktop Nav Links */}
         <div className="hidden md:flex items-center gap-4 lg:gap-6 min-w-0">
-          {["Home", "Crop Recommendations", "Disease Detection", "Soil Restoration"].map(
+          {navItems.map(
             (item, i) => (
               <motion.div
                 key={i}
@@ -62,15 +69,11 @@ export default function Navbar() {
                 variants={linkVariants}
                 className="relative group shrink-0"
               >
-                <Link
-                  to={
-                    item === "Home"
-                      ? "/"
-                      : `/${item.toLowerCase().replace(/\s+/g, "-")}`
-                  }
-                  className="hover:text-green-300 transition whitespace-nowrap text-sm lg:text-base"
+                 <Link
+                  to={item.path}
+                  className="hover:text-green-300 transition whitespace-nowrap text-sm lg:text-base flex items-center gap-1"
                 >
-                  {item}
+                  <span>{item.label}</span>
                 </Link>
                 {/* Underline Animation */}
                 <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-green-300 transition-all duration-300 group-hover:w-full"></span>
@@ -86,14 +89,29 @@ export default function Navbar() {
             variants={linkVariants}
             className="flex items-center gap-3 lg:gap-4 ml-3 lg:ml-4"
           >
-            {isAuthenticated ? (
-              <>
-                <span className="text-green-300 text-xs lg:text-sm truncate max-w-[120px] lg:max-w-[160px]">
-                  Welcome, {user?.username}
-                </span>
+             {isAuthenticated ? (
+               <>
+                 <span className="text-xs lg:text-sm truncate max-w-[200px] flex items-center gap-1">
+                   <span className="text-green-100/90">Welcome,</span>
+                   <span className="font-semibold text-lime-300">
+                     {user?.username}
+                   </span>
+                 </span>
                 <div className="relative group">
-                  <Link to="/profile" className="flex items-center text-white hover:text-green-300 transition text-lg px-2" title="Profile & Settings">
-                    <FaUserCircle size={24} />
+                  <Link
+                    to="/profile"
+                    className="flex items-center text-white hover:text-green-300 transition text-lg px-2"
+                    title="Profile & Settings"
+                  >
+                    {user?.avatar_url ? (
+                      <img
+                        src={`http://localhost:5000${user.avatar_url}`}
+                        alt="Profile"
+                        className="w-8 h-8 rounded-full object-cover ring-2 ring-green-300 shadow-sm"
+                      />
+                    ) : (
+                      <FaUserCircle size={24} className="text-green-300" />
+                    )}
                   </Link>
                   {/* Could put dropdown for more if wanted here */}
                 </div>
@@ -128,20 +146,25 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden absolute left-0 right-0 top-full bg-green-900/95 backdrop-blur border-t border-green-800">
           <div className="flex flex-col space-y-1.5 p-3">
-            {["Home", "Crop Recommendations", "Disease Detection", "Soil Restoration"].map((item, i) => (
+             {navItems.map((item, i) => (
               <Link
                 key={i}
-                to={item === "Home" ? "/" : `/${item.toLowerCase().replace(/\s+/g, "-")}`}
-                className="py-2 px-2 rounded hover:bg-green-800 text-sm"
+                to={item.path}
+                className="py-2 px-2 rounded hover:bg-green-800 text-sm flex items-center gap-2"
                 onClick={() => setMenuOpen(false)}
               >
-                {item}
+                <span>{item.label}</span>
               </Link>
             ))}
 
-            {isAuthenticated ? (
-              <div className="flex items-center justify-between pt-2">
-                <span className="text-green-300 text-sm truncate max-w-[50%]">{user?.username}</span>
+             {isAuthenticated ? (
+               <div className="flex items-center justify-between pt-2">
+                 <span className="text-sm truncate max-w-[50%] flex items-center gap-1">
+                   <span className="text-green-100/90">Welcome,</span>
+                   <span className="font-semibold text-lime-300">
+                     {user?.username}
+                   </span>
+                 </span>
                 <button
                   onClick={() => { setMenuOpen(false); logout(); }}
                   className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm"

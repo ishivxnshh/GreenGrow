@@ -132,7 +132,11 @@ const CropRecommendation = () => {
               🌱 Smart Crop Recommendation
             </h1>
             <p className="text-sm text-gray-600 mb-4">
-              Welcome, {user?.username}! Enter your soil and climate data to get personalized recommendations.
+              Welcome,{" "}
+              <span className="font-semibold text-lime-400">
+                {user?.username}
+              </span>
+              ! Enter your soil and climate data to get personalized recommendations.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">

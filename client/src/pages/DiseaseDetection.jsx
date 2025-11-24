@@ -4,6 +4,7 @@ import { GiPlantWatering } from "react-icons/gi";
 import { AiOutlineCheckCircle, AiOutlineExclamationCircle } from "react-icons/ai";
 import { MdOutlineScience } from "react-icons/md";
 import jsPDF from "jspdf";
+import bg from "/bg.jpg";
 
 function DiseaseDetection() {
   const [image, setImage] = useState(null);
@@ -51,8 +52,7 @@ function DiseaseDetection() {
     setError("");
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const runAnalysis = async () => {
     if (!image || !GEMINI_API_KEY) {
       setError(
         !GEMINI_API_KEY
@@ -135,18 +135,40 @@ function DiseaseDetection() {
     }
   };
 
-  return (
-    <div className="relative w-screen min-h-screen">
-      <div className="absolute inset-0 w-full h-full bg-cover bg-center -z-10" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1593529467227-35f093d1c148?auto=format&fit=crop&w=1350&q=80')" }}>
-        <div className="absolute inset-0 bg-white/50 backdrop-blur-sm"></div>
-      </div>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    runAnalysis();
+  };
 
-      <div className="relative max-w-4xl mx-auto p-8">
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center relative bubble-container"
+      style={{ backgroundImage: `url(${bg})` }}
+    >
+      {/* Background overlay to match crop recommendations style */}
+      <div className="absolute inset-0 bg-emerald-900/45 backdrop-blur-sm"></div>
+
+      {/* Decorative bubbles (slightly fewer and slower than crop recommendations) */}
+      {[...Array(14)].map((_, i) => (
+        <span
+          key={i}
+          className="bubble"
+          style={{
+            left: `${(i * 7 + 10) % 100}vw`,
+            animationDuration: `${4 + (i % 5)}s`,
+            width: `${14 + (i % 6) * 4}px`,
+            height: `${14 + (i % 6) * 4}px`,
+            background: "rgba(239, 246, 255, 0.55)",
+          }}
+        />
+      ))}
+
+      <div className="relative max-w-4xl mx-auto p-8 z-10">
         <h2 className="text-4xl font-extrabold text-green-800 mb-3 text-center flex items-center justify-center gap-3">
           <GiPlantWatering size={35} /> Disease Detection
         </h2>
 
-        <p className="text-center text-gray-700 mb-8 text-lg">
+        <p className="text-center text-white mb-8 text-lg font-medium drop-shadow-md">
           Upload a clear picture of your crop leaf 🍃 and we'll analyze it for possible diseases and give remedies.
         </p>
 
@@ -184,8 +206,17 @@ function DiseaseDetection() {
         {loading && <div className="mt-8 text-center text-green-700 font-medium animate-pulse">🔍 Analyzing your plant image...</div>}
 
         {error && !loading && (
-          <div className="mt-6 text-center text-red-600 font-medium bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-            {error}
+          <div className="mt-6 text-center bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex flex-col items-center gap-3">
+            <span className="text-red-600 font-medium">{error}</span>
+            {image && GEMINI_API_KEY && (
+              <button
+                type="button"
+                onClick={runAnalysis}
+                className="inline-flex items-center px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition"
+              >
+                Try again
+              </button>
+            )}
           </div>
         )}
 

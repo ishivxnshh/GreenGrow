@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FaSeedling, FaLeaf, FaHandsHelping } from "react-icons/fa";
+import bg from "/bg.jpg";
 
 function SoilRestoration() {
   const [lastCrop, setLastCrop] = useState("");
@@ -29,20 +30,30 @@ function SoilRestoration() {
   };
 
   return (
-    <div className="relative w-screen min-h-screen">
-      {/* ✅ Background Image */}
-      <div
-        className="absolute inset-0 w-full h-full bg-cover bg-center -z-10"
-        style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1524592714635-d77511a4834c?auto=format&fit=crop&w=1350&q=80')",
-        }}
-      >
-        <div className="absolute inset-0 bg-white/40"></div>
-      </div>
+    <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center relative bubble-container"
+      style={{ backgroundImage: `url(${bg})` }}
+    >
+      {/* ✅ Background overlay: consistent cool green tint like other tools */}
+      <div className="absolute inset-0 bg-emerald-900/40 backdrop-blur-sm"></div>
+
+      {/* Floating soil / nutrient bubbles, warmer tone and different sizing */}
+      {[...Array(18)].map((_, i) => (
+        <span
+          key={i}
+          className="bubble"
+          style={{
+            left: `${(i * 5 + 15) % 100}vw`,
+            animationDuration: `${3 + (i % 7)}s`,
+            width: `${10 + (i % 7) * 3}px`,
+            height: `${10 + (i % 7) * 3}px`,
+            background: "rgba(254, 249, 195, 0.55)", // soft yellow
+          }}
+        />
+      ))}
 
       {/* ✅ Content */}
-      <div className="relative max-w-3xl mx-auto p-8">
+      <div className="relative max-w-3xl mx-auto p-8 z-10">
         {/* Heading */}
         <h2 className="text-4xl font-bold text-green-800 mb-6 text-center flex items-center justify-center gap-3">
           <FaHandsHelping size={32} /> Soil Restoration
