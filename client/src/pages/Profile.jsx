@@ -41,7 +41,7 @@ export default function Profile() {
         setAbout(u.about || "");
         setJoinedAt(u.created_at || "");
         setIsActiveFlag(u.is_active ?? true);
-      } catch (e) {
+      } catch {
         setAvatarUrl("");
       }
     }
@@ -121,7 +121,7 @@ export default function Profile() {
         } else {
           setMessage(data.error || "Avatar update failed");
         }
-      } catch (err) {
+      } catch {
         setMessage("Avatar upload error");
       }
       setLoading(false);
@@ -141,7 +141,7 @@ export default function Profile() {
       });
       setAvatarUrl("");
       setMessage("Avatar removed");
-    } catch (e) {
+    } catch {
       setMessage("Could not remove avatar, try again");
     }
     setLoading(false);

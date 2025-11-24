@@ -26,7 +26,7 @@ export default function Navbar() {
 
   return (
     <motion.nav
-      className="relative bg-green-900/95 backdrop-blur text-white p-2 sm:p-3 md:p-4 shadow-md sticky top-0 z-50"
+      className="sticky top-0 z-50 bg-green-900/95 backdrop-blur text-white p-2 sm:p-3 md:p-4 shadow-md"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.8, type: "spring" }}
