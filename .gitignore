@@ -1,36 +1,252 @@
+# ============================================
+# Environment Variables
+# ============================================
 .env
 .env.*
+.env.local
+.env.development
+.env.test
+.env.production
+*.env
 
-# Python / Flask
+# ============================================
+# Python / Flask Backend
+# ============================================
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
 *.pyo
 *.pyd
 *.pyc
 *.pdb
+
+# C extensions
+*.so
+
+# Distribution / packaging
 .Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
 env/
 venv/
+ENV/
+env.bak/
+venv.bak/
 myvenv/
+.venv/
+pipenv/
 
-# Node / Vite
+# Flask specific
+instance/
+.webassets-cache
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.cover
+*.log
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# pyenv
+.python-version
+
+# ============================================
+# Node.js / React / Vite Frontend
+# ============================================
+# Dependencies
 node_modules/
 client/node_modules/
 server/node_modules/
-dist/
-client/dist/
+jspm_packages/
+bower_components/
 
-# IDE / OS
-.vscode/
-.idea/
+# Production builds
+dist/
+dist-ssr/
+client/dist/
+client/build/
+build/
+*.local
+
+# Vite
+.vite/
+client/.vite/
+
+# Testing
+coverage/
+client/coverage/
+*.lcov
+.nyc_output/
+
+# Logs
+logs/
 *.log
-*.tmp
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Cache
+.npm
+.eslintcache
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+
+# ============================================
+# IDEs and Editors
+# ============================================
+# VS Code
+.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+.idea/*
+*.iml
+*.ipr
+*.iws
+out/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
 *.swp
 *.swo
-.DS_Store
-Thumbs.db
+*~
+.*.sw?
 
-# Local data / uploads
-server/uploads/
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# ============================================
+# Operating System Files
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+.directory
+.Trash-*
+.nfs*
+
+# ============================================
+# Project Specific
+# ============================================
+# Uploads and user-generated content
+server/uploads/*
+!server/uploads/.gitkeep
+!server/uploads/avatars/.gitkeep
+uploads/
+*.upload
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# ML Models (if large)
+*.h5
+*.pkl
+*.joblib
+*.model
+*.weights
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+.~*
+
+# Secrets and credentials
+*.pem
+*.key
+*.cert
+*.crt
+secrets.json
+credentials.json
+
+# ============================================
+# Miscellaneous
+# ============================================
+# Compressed files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Documentation builds
+docs/_build/
+site/
+
+# TypeScript
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Yarn
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
 
 
