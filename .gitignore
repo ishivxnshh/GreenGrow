@@ -2,12 +2,15 @@
 # Environment Variables
 # ============================================
 .env
-.env.*
 .env.local
 .env.development
 .env.test
 .env.production
-*.env
+.env.*.local
+
+# Allow .env.example files to be committed
+!.env.example
+!**/.env.example
 
 # ============================================
 # Python / Flask Backend
