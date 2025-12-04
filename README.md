@@ -70,14 +70,17 @@ myvenv\Scripts\activate      # Windows PowerShell / CMD
 pip install -r requirements.txt
 ```
 
-Create a `.env` file in `server/`:
+Create a `.env` file in `server/` (copy from `.env.example`):
 
 ```bash
-SECRET_KEY=your-super-secret-key-change-in-production
-JWT_SECRET_KEY=jwt-super-secret-key-change-in-production
-MONGO_URI=mongodb://localhost:27017/
-MONGO_DB_NAME=greengrow
+# Windows
+copy .env.example .env
+
+# macOS/Linux
+# cp .env.example .env
 ```
+
+Update the `.env` file with your actual configuration values.
 
 Start MongoDB (local or cloud), then run the server:
 
@@ -96,6 +99,21 @@ In a separate terminal, from the project root:
 ```bash
 cd client
 npm install
+```
+
+Create a `.env` file in `client/` (copy from `.env.example`):
+
+```bash
+# Windows
+copy .env.example .env
+
+# macOS/Linux
+# cp .env.example .env
+```
+
+Update the `.env` file if needed, then start the dev server:
+
+```bash
 npm run dev
 ```
 
