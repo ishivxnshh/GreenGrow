@@ -23,7 +23,7 @@ function App() {
         <Navbar />
 
         {/* Background wrapper */}
-        <div className="flex-grow">
+        <div className="grow">
           <AppWrapper>
             <Routes>
               <Route path="/" element={<Home />} />
